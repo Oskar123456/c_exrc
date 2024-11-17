@@ -8,8 +8,9 @@ License:            none
 
 #include "../include/obh/incl.h"
 #include "../include/obh/c_log.h"
+#include "../include/obh/calc.h"
 
-#include "solution.c"
+//#include "solution.c"
 
 #define STB_DS_IMPLEMENTATION
 #include "../include/stb/stb_ds.h"
@@ -31,13 +32,17 @@ int main(int argc, char *argv[])
 
     printf("%s\n", open);
 
+    calcTest(10);
+
     int maxlen = 256;
     char line[maxlen];
     while ((fgets(line, maxlen, stdin)) != NULL) {
-        lex(line);
-        SyntaxTree* ast = parse();
-        printast(ast, 0);
-        c_log_success(LOG_TAG, "result: %f", eval(ast));
+        //lex(line);
+        //SyntaxTree* ast = parse();
+        //printast(ast, 0);
+        //c_log_success(LOG_TAG, "result: %f", eval(ast));
+        double res = calcEval(line);
+        c_log_success(LOG_TAG, "result: %f", res);
     }
 
     printf("%s\n", close);
