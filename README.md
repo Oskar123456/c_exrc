@@ -1,15 +1,7 @@
-# Game Programming in C
-
-## TODO:
-
-  - get handle on world positions, mapping between model & view.
-  - collision
-  - ?
+# C Project template for exercises
 
 ## Libs
 
-  - **raylib**
-    + []
   - **stb**
     + []
   - **cJSON**
@@ -18,13 +10,6 @@
     + []
   - **mlib**
     + https://github.com/P-p-H-d/mlib
-  - **klib**
-    + []
-  - **Mongoose**
-    + https://mongoose.ws
-  - **libql**
-    + (*postgres* client library)
-    + https://github.com/postgres/postgres
 
 ## Utility libs that we might be interested in
 
