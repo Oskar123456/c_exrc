@@ -1,0 +1,16 @@
+Diagnostics:
+  UnusedIncludes: None
+
+InlayHints:
+  BlockEnd: No
+  Designators: Yes
+  Enabled: No
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  TypeNameLimit: 24
+
+Index:
+  StandardLibrary: No
+
+
+
