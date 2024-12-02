@@ -16,50 +16,6 @@ License:            none
 #define STB_DS_IMPLEMENTATION
 #include "../include/stb/stb_ds.h"
 
-int var_arg_test(int n, ...)
-{
-    int res = 0;
-    printf("%d: %d (%p)\n", -1, n, &n);
-    char *arg_ptr = (char*)(&n) + 28;
-    for (int i = 0; i < (n > 5 ? 5 : n); ++i) {
-        printf("%d: %d (%p)\n", i, *(int*)arg_ptr, arg_ptr);
-        arg_ptr += 8;
-    }
-    arg_ptr = (char*)(&n) + 212;
-    for (int i = 0; i < n - 5; ++i) {
-        printf("%d: %d (%p)\n", i, *(int*)arg_ptr, arg_ptr);
-        arg_ptr += 8;
-    }
-    return res;
-}
-
-void var_arg_test_lol(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8, int n9, int n10)
-{
-    int i = 0;
-    printf("%d: (%p)\n", i++, &n1);
-    printf("%d: (%p)\n", i++, &n2);
-    printf("%d: (%p)\n", i++, &n3);
-    printf("%d: (%p)\n", i++, &n4);
-    printf("%d: (%p)\n", i++, &n5);
-    printf("%d: (%p)\n", i++, &n6);
-    printf("%d: (%p)\n", i++, &n7);
-    printf("%d: (%p)\n", i++, &n8);
-    printf("%d: (%p)\n", i++, &n9);
-    printf("%d: (%p)\n", i++, &n10);
-}
-
-int va_list_test(int n, ...)
-{
-    int c_arg, i = 0, res = 0;
-    va_list ap;
-    va_start(ap, n);
-    for (int i = 0; i < n; ++i)
-        res += va_arg(ap, int);
-    va_end(ap);
-    return res;
-}
-
-
 int main(int argc, char *argv[])
 {
 
@@ -68,7 +24,9 @@ int main(int argc, char *argv[])
     srand(time(NULL));
     c_log_init(stderr, LOG_LEVEL_SUCCESS);
 
-    int delim_len = 50;
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int delim_len = w.ws_col - 1;
     char open[delim_len + 1], close[delim_len + 1];
     for (int i = 0; i < delim_len; ++i) {
         open[i] = '>'; close[i] = '<';
@@ -77,8 +35,50 @@ int main(int argc, char *argv[])
 
     printf("%s\n", open);
 
-    int maxlen = 256;
-    char line[maxlen];
+    /* LET THE GAMES BEGIN */
+
+    printf("***ADVENT OF CODE 2024***\n");
+    printf(">>> advent of code day 1\n");
+    struct timespec t, at;
+    u64 dt_ns, dt_sec, dt_millis;
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    int aoc1a = aoc_1_a();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
+    dt_ns  = at.tv_nsec - t.tv_nsec;
+    dt_sec = at.tv_sec - t.tv_sec;
+    u64 aoc1a_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    int aoc1b = aoc_1_b();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
+    dt_ns  = at.tv_nsec - t.tv_nsec;
+    dt_sec = at.tv_sec - t.tv_sec;
+    u64 aoc1b_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    int aoc2a = aoc_2_a();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
+    dt_ns  = at.tv_nsec - t.tv_nsec;
+    dt_sec = at.tv_sec - t.tv_sec;
+    u64 aoc2a_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    int aoc2b = aoc_2_b();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
+    dt_ns  = at.tv_nsec - t.tv_nsec;
+    dt_sec = at.tv_sec - t.tv_sec;
+    u64 aoc2b_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
+
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", aoc1a, aoc1a_dt_micro);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", aoc1b, aoc1b_dt_micro);
+
+    printf(">>> advent of code day 2\n");
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", aoc2a, aoc2a_dt_micro);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", aoc2b, aoc2b_dt_micro);
+
+    //int maxlen = 256;
+    //char line[maxlen];
     //while ((fgets(line, maxlen, stdin)) != NULL) {
         //lex(line);
         //SyntaxTree* ast = parse();
@@ -88,8 +88,7 @@ int main(int argc, char *argv[])
         //c_log_success(LOG_TAG, "result: %f", res);
     //}
 
-    printf(" >>> advent of code day 1 (a) solution: %d \u2713\n", aoc_1_a());
-    printf(" >>> advent of code day 1 (b) solution: %d \u2713\n", aoc_1_b());
+    /* LET THE GAMES END */
 
     printf("%s\n", close);
     return exit_code;

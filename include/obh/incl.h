@@ -8,28 +8,29 @@
 #ifndef INCLS_H
 #define INCLS_H
 /* defaults */
-#include <math.h>
-#include <time.h>
-#include <sys/time.h>
+#include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdarg.h>
+#include <sys/time.h>
+#include <time.h>
 #include <wchar.h>
-#include <errno.h>
 /* linux */
-#if defined(__UNIX__) || defined(__LINUX__)
+#if defined(__unix__) || defined(__linux__)
 #include <signal.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/termios.h>
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 /* strings */
