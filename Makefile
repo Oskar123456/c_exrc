@@ -30,17 +30,17 @@ CFLAGS_EXTRA    ?= -DMG_TLS=MG_TLS_BUILTIN
 #DO NOT EDIT BELOW THIS LINE
 #---------------------------------------------------------------------------------
 SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
-SOURCES     := $(filter-out src/solution.c, $(SOURCES))
+SOURCES     := $(filter-out $(wildcard src/solutions/*), $(SOURCES))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 include $(ENV_FILES)
 export
 
 #Default Make
-all: resources $(TARGET)
-
 run: resources $(TARGET)
 	./$(TARGETDIR)/$(TARGET)
+
+all: resources $(TARGET)
 
 #Remake
 remake: cleaner all

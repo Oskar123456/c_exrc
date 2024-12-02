@@ -64,7 +64,7 @@ double calcEvalInternal(char *expr, int prec_level)
         return NAN;
     }
 
-    c_log_info(LOG_TAG, "eval %s (pl:%d)", expr, prec_level);
+    //c_log_info(LOG_TAG, "eval %s (pl:%d)", expr, prec_level);
     //sleep(1);
 
     char prev = 0;
@@ -81,8 +81,8 @@ double calcEvalInternal(char *expr, int prec_level)
             double num = strtod(expr_ptr, &num_endptr);
             if (num_endptr == expr_ptr || num_endptr == NULL)
                 c_log_error(LOG_TAG, "number format error at %ld", expr_ptr - expr);
-            else
-                c_log_info(LOG_TAG, "number constant %f at %ld", num, expr_ptr - expr);
+            //else
+                //c_log_info(LOG_TAG, "number constant %f at %ld", num, expr_ptr - expr);
             return num;
             }
         }

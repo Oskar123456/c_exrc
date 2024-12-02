@@ -6,9 +6,9 @@ Description:        exercise template
 License:            none
 *****************************************************/
 
-#include "../include/obh/incl.h"
-#include "../include/obh/c_log.h"
-#include "../include/stb/stb_ds.h"
+#include "../../include/obh/incl.h"
+#include "../../include/obh/c_log.h"
+#include "../../include/stb/stb_ds.h"
 
 typedef enum TOK_TYPE {
     TOK_OP,
