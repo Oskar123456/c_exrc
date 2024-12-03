@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <time.h>
 #include <wchar.h>
 /* linux */
@@ -32,11 +31,14 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <regex.h>
 #endif
-/* strings */
+/* util */
 #include "../sds/sds.h"
 #include "../cJSON/cJSON.h"
 #include "../stb/stb_ds.h"
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 /* own */
 /* typedefs, macros, defs */
 typedef  uint8_t  u8;

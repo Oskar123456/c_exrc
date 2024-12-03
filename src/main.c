@@ -12,9 +12,22 @@ License:            none
 
 #include "solutions/solution.c"
 #include "solutions/advent_of_code.c"
+#include <pcre2.h>
 
 #define STB_DS_IMPLEMENTATION
 #include "../include/stb/stb_ds.h"
+
+void timeFn(int (*fn)(void), int *dest, u64 *time_dest)
+{
+    struct timespec t, at;
+    u64 dt_ns, dt_sec, dt_millis;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    *dest = fn();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
+    dt_ns  = at.tv_nsec - t.tv_nsec;
+    dt_sec = at.tv_sec - t.tv_sec;
+    *time_dest = dt_ns / 1000 + dt_sec * 1000000; /* micros */
+}
 
 int main(int argc, char *argv[])
 {
@@ -36,46 +49,27 @@ int main(int argc, char *argv[])
     printf("%s\n", open);
 
     /* LET THE GAMES BEGIN */
+    int result_int; u64 time_mcs;
 
     printf("***ADVENT OF CODE 2024***\n");
     printf(">>> advent of code day 1\n");
-    struct timespec t, at;
-    u64 dt_ns, dt_sec, dt_millis;
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-    int aoc1a = aoc_1_a();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
-    dt_ns  = at.tv_nsec - t.tv_nsec;
-    dt_sec = at.tv_sec - t.tv_sec;
-    u64 aoc1a_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-    int aoc1b = aoc_1_b();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
-    dt_ns  = at.tv_nsec - t.tv_nsec;
-    dt_sec = at.tv_sec - t.tv_sec;
-    u64 aoc1b_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-    int aoc2a = aoc_2_a();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
-    dt_ns  = at.tv_nsec - t.tv_nsec;
-    dt_sec = at.tv_sec - t.tv_sec;
-    u64 aoc2a_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-    int aoc2b = aoc_2_b();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
-    dt_ns  = at.tv_nsec - t.tv_nsec;
-    dt_sec = at.tv_sec - t.tv_sec;
-    u64 aoc2b_dt_micro = dt_ns / 1000 + dt_sec * 1000000;
-
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", aoc1a, aoc1a_dt_micro);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", aoc1b, aoc1b_dt_micro);
+    timeFn(aoc_1_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_1_b, &result_int, &time_mcs);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
     printf(">>> advent of code day 2\n");
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", aoc2a, aoc2a_dt_micro);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", aoc2b, aoc2b_dt_micro);
+    timeFn(aoc_2_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_2_b, &result_int, &time_mcs);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+
+    printf(">>> advent of code day 3\n");
+    timeFn(aoc_3_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_3_b, &result_int, &time_mcs);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
     //int maxlen = 256;
     //char line[maxlen];

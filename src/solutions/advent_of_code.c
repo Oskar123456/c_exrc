@@ -28,6 +28,112 @@ int int_array_cmp(const void* a, const void* b)
     return ((int_array_t*)a)->key - ((int_array_t*)b)->key;
 }
 
+int aoc_3_b()
+{
+    i64 result = 0;
+
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_3_data.txt");
+
+    int err_code; u64 err_offset;
+    PCRE2_SPTR pattern = (PCRE2_SPTR) "mul\\([0-9]+,[0-9]+\\)";
+    pcre2_code *regex = pcre2_compile(pattern, PCRE2_ZERO_TERMINATED,
+            0, &err_code, &err_offset, NULL);
+    pcre2_match_data *match_data;
+
+    for (int data_str_off = 0; data_str_off < sdslen(data_str);) {
+        match_data = pcre2_match_data_create_from_pattern(regex, NULL);
+        int match_num = pcre2_match(regex, (PCRE2_SPTR)data_str, PCRE2_ZERO_TERMINATED,
+                data_str_off, 0, match_data, NULL);
+
+        if (match_num < 1)
+            break;
+
+        PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
+
+        char *match_ptr = &data_str[ovector[0]];
+        char *match_ptr_forp = &data_str[ovector[0]];
+        int match_len = ovector[1] - ovector[0];
+
+        bool enable = true;
+        for (char *matchptr_b = match_ptr - 1; matchptr_b >= data_str; matchptr_b--) {
+            if (*matchptr_b == 'd') {
+                if (strncmp(matchptr_b, "do()", strlen("do()")) == 0) {
+                    break;
+                }
+                if (strncmp(matchptr_b, "don't()", strlen("don't()")) == 0) {
+                    enable = false;
+                    break;
+                }
+            }
+        }
+
+        while (!isdigit(*match_ptr))
+            match_ptr++;
+        long a = strtol(match_ptr, &match_ptr, 10);
+        while (!isdigit(*match_ptr))
+            match_ptr++;
+        long b = strtol(match_ptr, &match_ptr, 10);
+        if (enable)
+            result += a * b;
+
+        //printf("%.*s: %ld * %ld = %ld (total: %ld\n",
+        //        match_len, match_ptr_forp, a, b, a * b, result);
+        pcre2_match_data_free(match_data);
+        data_str_off = ovector[1];
+    }
+
+    pcre2_match_data_free(match_data);
+    pcre2_code_free(regex);
+    sdsfree(data_str);
+    return result;
+}
+
+int aoc_3_a()
+{
+    i64 result = 0;
+
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_3_data.txt");
+
+    int err_code; u64 err_offset;
+    PCRE2_SPTR pattern = (PCRE2_SPTR) "mul\\([0-9]+,[0-9]+\\)";
+    pcre2_code *regex = pcre2_compile(pattern, PCRE2_ZERO_TERMINATED,
+            0, &err_code, &err_offset, NULL);
+    pcre2_match_data *match_data;
+
+    for (int data_str_off = 0; data_str_off < sdslen(data_str);) {
+        match_data = pcre2_match_data_create_from_pattern(regex, NULL);
+        int match_num = pcre2_match(regex, (PCRE2_SPTR)data_str, PCRE2_ZERO_TERMINATED,
+                data_str_off, 0, match_data, NULL);
+
+        if (match_num < 1)
+            break;
+
+        PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
+
+        char *match_ptr = &data_str[ovector[0]];
+        char *match_ptr_forp = &data_str[ovector[0]];
+        int match_len = ovector[1] - ovector[0];
+
+        while (!isdigit(*match_ptr))
+            match_ptr++;
+        long a = strtol(match_ptr, &match_ptr, 10);
+        while (!isdigit(*match_ptr))
+            match_ptr++;
+        long b = strtol(match_ptr, &match_ptr, 10);
+        result += a * b;
+
+        //printf("%.*s: %ld * %ld = %ld (total: %ld\n",
+        //        match_len, match_ptr_forp, a, b, a * b, result);
+        pcre2_match_data_free(match_data);
+        data_str_off = ovector[1];
+    }
+
+    pcre2_match_data_free(match_data);
+    pcre2_code_free(regex);
+    sdsfree(data_str);
+    return result;
+}
+
 int aoc_2_a()
 {
     sds reports_str = sdsfread(sdsempty(), "resources/aoc_2_data.txt");
@@ -83,6 +189,11 @@ int aoc_2_a()
 
     //c_log_info(LOG_TAG, "%d/%d found safe", res, arrlen(reports));
 
+    for (int i = 0; i < arrlen(reports); ++i) {
+        arrfree(reports[i]);
+    }
+    arrfree(reports);
+    sdsfree(reports_str);
     return res;
 }
 
@@ -155,7 +266,13 @@ int aoc_2_b()
 
         res += verf;
     }
+
+    for (int i = 0; i < arrlen(reports); ++i) {
+        arrfree(reports[i]);
+    }
+    arrfree(reports);
     arrfree(test_report);
+    sdsfree(reports_str);
 
     return res;
 }
@@ -188,6 +305,8 @@ int aoc_1_a()
         //printf("d(%d %d) = %d\n", list_l_r[0][i].key, list_l_r[1][i].key, abs(list_l_r[0][i].key - list_l_r[1][i].key));
     }
 
+    arrfree(list_l_r[0]);
+    arrfree(list_l_r[1]);
     return res;
 }
 
@@ -225,6 +344,9 @@ int aoc_1_b()
         //printf("%d occurs %d times in right, %d times in left\n",
                 //map_l_r[0][i].key, map_l_r[0][i].value, hmget(map_l_r[1], map_l_r[0][i].key));
     }
+
+    hmfree(map_l_r[0]);
+    hmfree(map_l_r[1]);
 
     return res;
 }
