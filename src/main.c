@@ -71,6 +71,18 @@ int main(int argc, char *argv[])
     timeFn(aoc_3_b, &result_int, &time_mcs);
     printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
+    printf(">>> advent of code day 4\n");
+    timeFn(aoc_4_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_4_b, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+
+    printf(">>> advent of code day 5\n");
+    timeFn(aoc_5_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_5_b, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+
     //int maxlen = 256;
     //char line[maxlen];
     //while ((fgets(line, maxlen, stdin)) != NULL) {

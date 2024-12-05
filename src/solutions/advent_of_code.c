@@ -11,6 +11,10 @@ License:            none
 #include "../../include/obh/util.h"
 #include "../../include/stb/stb_ds.h"
 
+typedef struct ivec2_t {
+    int x, y;
+} ivec2_t;
+
 typedef struct int_array_t {
     union {
         int key;
@@ -26,6 +30,212 @@ typedef struct int_map_t {
 int int_array_cmp(const void* a, const void* b)
 {
     return ((int_array_t*)a)->key - ((int_array_t*)b)->key;
+}
+
+static ivec2_t *pairs;
+
+int aoc_5_a_cmp(const void* a, const void* b)
+{
+    int ai = *(int*)a; int bi = *(int*)b;
+
+    for (int i = 0; i < arrlen(pairs); ++i) {
+        if (pairs[i].x == ai && pairs[i].y == bi)
+            return -1;
+        if (pairs[i].y == ai && pairs[i].x == bi)
+            return 1;
+    }
+
+    return 0;
+}
+
+int aoc_5_b()
+{
+    i64 result = 0;
+    sds data = sdsfread(sdsempty(), "resources/aoc_5_data.txt");
+    char *data_ptr = data;
+    int **updates = NULL, updates_idx = -1;
+    int **updates_sorted = NULL, updates_sorted_idx = -1;
+
+    for (;;) {
+        if (*data_ptr == '\n' && *(data_ptr + 1) == '\n')
+            break;
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 a = strtoll(data_ptr, &data_ptr, 10);
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 b = strtoll(data_ptr, &data_ptr, 10);
+        ivec2_t p = { a, b };
+        arrput(pairs, p);
+    }
+
+    for (;;) {
+        if (data_ptr - data >= sdslen(data) - 1)
+            break;
+        if (*data_ptr == '\n') {
+            arrput(updates, NULL);
+            updates_idx++;
+        }
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 a = strtoll(data_ptr, &data_ptr, 10);
+        arrput(updates[updates_idx], a);
+    }
+
+    for (int i = 0; i < arrlen(updates); ++i) {
+        arrput(updates_sorted, NULL);
+        updates_sorted_idx++;
+        arrsetlen(updates_sorted[updates_sorted_idx], arrlen(updates[i]));
+        memcpy(updates_sorted[updates_sorted_idx], updates[i], sizeof(int) * arrlen(updates[i]));
+        qsort(updates_sorted[updates_sorted_idx], arrlen(updates[i]), sizeof(int), aoc_5_a_cmp);
+    }
+
+    for (int i = 0; i < arrlen(updates); ++i) {
+        if (memcmp(updates[i], updates_sorted[i], arrlen(updates[i]) * sizeof(int)) == 0)
+            continue;
+        result += updates_sorted[i][arrlen(updates_sorted[i]) / 2];
+    }
+
+    return result;
+}
+
+int aoc_5_a()
+{
+    i64 result = 0;
+    sds data = sdsfread(sdsempty(), "resources/aoc_5_data.txt");
+    char *data_ptr = data;
+    int **updates = NULL, updates_idx = -1;
+    int **updates_sorted = NULL, updates_sorted_idx = -1;
+
+    for (;;) {
+        if (*data_ptr == '\n' && *(data_ptr + 1) == '\n')
+            break;
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 a = strtoll(data_ptr, &data_ptr, 10);
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 b = strtoll(data_ptr, &data_ptr, 10);
+        ivec2_t p = { a, b };
+        arrput(pairs, p);
+    }
+
+    for (;;) {
+        if (data_ptr - data >= sdslen(data) - 1)
+            break;
+        if (*data_ptr == '\n') {
+            arrput(updates, NULL);
+            updates_idx++;
+        }
+        while (!isdigit(*data_ptr)) data_ptr++;
+        i64 a = strtoll(data_ptr, &data_ptr, 10);
+        arrput(updates[updates_idx], a);
+    }
+
+    for (int i = 0; i < arrlen(updates); ++i) {
+        arrput(updates_sorted, NULL);
+        updates_sorted_idx++;
+        arrsetlen(updates_sorted[updates_sorted_idx], arrlen(updates[i]));
+        memcpy(updates_sorted[updates_sorted_idx], updates[i], sizeof(int) * arrlen(updates[i]));
+        qsort(updates_sorted[updates_sorted_idx], arrlen(updates[i]), sizeof(int), aoc_5_a_cmp);
+    }
+
+    for (int i = 0; i < arrlen(updates); ++i) {
+        if (memcmp(updates[i], updates_sorted[i], arrlen(updates[i]) * sizeof(int)) == 0)
+            result += updates[i][arrlen(updates[i]) / 2];
+    }
+
+    return result;
+}
+
+int aoc_4_b()
+{
+    i64 result = 0, dm_idx = -1;
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_4_data.txt");
+    sds *dm = NULL;
+
+    for (int i = 0; i < sdslen(data_str); ++i) {
+        arrput(dm, sdsempty());
+        dm_idx++;
+
+        int j;
+        for (j = i; data_str[j] != '\n' && data_str[j]; ++j);
+        dm[dm_idx] = sdscatlen(dm[dm_idx], &data_str[i], j - i);
+
+        i = j;
+    }
+
+    for (int i = 0; i < arrlen(dm); ++i) {
+        for (int j = 0; j < sdslen(dm[i]); ++j) {
+            if (dm[i][j] != 'A')
+                continue;
+            if (i - 1 < 0 || j - 1 < 0
+                    || i + 1 >= arrlen(dm)
+                    || j + 1 >= sdslen(dm[i]))
+                continue;
+            char nw = dm[i - 1][j - 1];
+            char ne = dm[i - 1][j + 1];
+            char se = dm[i + 1][j + 1];
+            char sw = dm[i + 1][j - 1];
+            if (((nw == 'M' || nw == 'S') && (se == 'M' || se == 'S') && nw != se)
+                    && ((ne == 'M' || ne == 'S') && (sw == 'M' || sw == 'S') && ne != sw))
+                result++;
+        }
+    }
+
+    for (int i = 0; i < arrlen(dm); ++i)
+        sdsfree(dm[i]);
+    arrfree(dm);
+    sdsfree(data_str);
+    return result;
+}
+
+int aoc_4_a()
+{
+    i64 result = 0, dm_idx = -1;
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_4_data.txt");
+    sds *dm = NULL;
+
+    for (int i = 0; i < sdslen(data_str); ++i) {
+        arrput(dm, sdsempty());
+        dm_idx++;
+
+        int j;
+        for (j = i; data_str[j] != '\n' && data_str[j]; ++j);
+        dm[dm_idx] = sdscatlen(dm[dm_idx], &data_str[i], j - i);
+
+        i = j;
+    }
+
+    for (int i = 0; i < arrlen(dm); ++i) {
+        for (int j = 0; j < sdslen(dm[i]); ++j) {
+            if (dm[i][j] != 'X')
+                continue;
+            char *xmas = "XMAS";
+            bool n, ne, e, se, s, sw, w, nw;
+            n = ne = e = se = s = sw = w = nw = true;
+            for (int k = 1; k < strlen(xmas); ++k) {
+                if (!(i - k >= 0 && dm[i - k][j] == xmas[k]))
+                    n = false;
+                if (!(i - k >= 0 && j + k < sdslen(dm[i]) && dm[i - k][j + k] == xmas[k]))
+                    ne = false;
+                if (!(j + k < sdslen(dm[i]) && dm[i][j + k] == xmas[k]))
+                    e = false;
+                if (!(i + k < arrlen(dm) && j + k < sdslen(dm[i]) && dm[i + k][j + k] == xmas[k]))
+                    se = false;
+                if (!(i + k < arrlen(dm) && dm[i + k][j] == xmas[k]))
+                    s = false;
+                if (!(i + k < arrlen(dm) && j - k >= 0 && dm[i + k][j - k] == xmas[k]))
+                    sw = false;
+                if (!(j - k >= 0 && dm[i][j - k] == xmas[k]))
+                    w = false;
+                if (!(i - k >= 0 && j - k >= 0 && dm[i - k][j - k] == xmas[k]))
+                    nw = false;
+            }
+            result += n + ne + e + se + s + sw + w + nw;
+        }
+    }
+
+    for (int i = 0; i < arrlen(dm); ++i)
+        sdsfree(dm[i]);
+    arrfree(dm);
+    sdsfree(data_str);
+    return result;
 }
 
 int aoc_3_b()
