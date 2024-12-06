@@ -32,8 +32,157 @@ int int_array_cmp(const void* a, const void* b)
     return ((int_array_t*)a)->key - ((int_array_t*)b)->key;
 }
 
-static ivec2_t *pairs;
+typedef struct ivec2_map_t {
+    union {
+        ivec2_t key;
+        ivec2_t value;
+    };
+} ivec2_map_t;
 
+int aoc_6_b()
+{
+    i64 result = 0;
+
+    i8 dir;
+    char *dir_chars = "^>v<";
+    ivec2_t dirs[] = { {  0, -1 }, {  1,  0 }, {  0,  1 }, { -1,  0 } };
+    ivec2_t pos;
+
+    sds *data = NULL;
+    FILE *f = fopen("resources/aoc_data/aoc_6_data.txt", "r");
+    //FILE *f = fopen("aoc6testdata.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        sds l = sdscatlen(sdsempty(), line, strlen(line) - 1);
+        char *gp;
+        if ((gp = strpbrk(l, dir_chars))) {
+            pos.x = gp - l;
+            pos.y = arrlen(data);
+            dir = strchr(dir_chars, *gp) - dir_chars;
+            printf("%d, %d dir: %d\n", pos.y, pos.x, dir);
+        }
+        arrput(data, l);
+    }
+    fclose(f);
+
+    bool visited_dirs[arrlen(data)][sdslen(data[0]) * 4];
+    for (int i = 0; i < arrlen(data); ++i) {
+        for (int j = 0; j < sdslen(data[i]); ++j) {
+            if (data[i][j] != '.')
+                continue;
+
+            memset(visited_dirs, 0, sizeof(bool) * arrlen(data) * sdslen(data[i]) * 4);
+
+            data[i][j] = '#';
+
+            ivec2_t npos = pos;
+            i8 ndir = dir;
+            int c = 0;
+            for (;;) {
+                c++;
+
+                visited_dirs[npos.y][npos.x * 4 + ndir] = 1;
+
+                npos.x += dirs[ndir].x;
+                npos.y += dirs[ndir].y;
+
+                if ( npos.y < 0 || npos.y >= arrlen(data) || npos.x < 0 || npos.x >= sdslen(data[npos.y])) {
+                    break;
+                }
+
+                if (visited_dirs[npos.y][npos.x * 4 + ndir]) {
+                    result++;
+                    break;
+                }
+
+                if (data[npos.y][npos.x] == '#') {
+                    npos.x -= dirs[ndir].x;
+                    npos.y -= dirs[ndir].y;
+                    ndir = (ndir + 1) % 4;
+                    continue;
+                }
+            }
+
+            data[i][j] = '.';
+        }
+    }
+
+    for (int i = 0; i < arrlen(data); ++i)
+        sdsfree(data[i]);
+    arrfree(data);
+
+    return result;
+}
+
+int aoc_6_a()
+{
+    i64 result = 0;
+    sds *data = NULL;
+
+    i8 dir;
+    char *dir_chars = "^>v<";
+    ivec2_t dirs[] = { {  0, -1 }, {  1,  0 }, {  0,  1 }, { -1,  0 } };
+    ivec2_t pos;
+
+    FILE *f = fopen("resources/aoc_data/aoc_6_data.txt", "r");
+    //FILE *f = fopen("aoc6testdata.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        sds l = sdscatlen(sdsempty(), line, strlen(line) - 1);
+        char *gp;
+        if ((gp = strpbrk(l, "<>^v"))) {
+            pos.x = gp - l;
+            pos.y = arrlen(data);
+            if (*gp == '^')
+                dir = 0;
+            if (*gp == '>')
+                dir = 1;
+            if (*gp == 'v')
+                dir = 2;
+            if (*gp == '<')
+                dir = 3;
+        }
+        arrput(data, l);
+    }
+
+    for (;;) {
+        data[pos.y][pos.x] = 'X';
+
+        pos.x += dirs[dir].x;
+        pos.y += dirs[dir].y;
+
+        if ( pos.y < 0 || pos.y >= arrlen(data)
+                || pos.x < 0 || pos.x >= sdslen(data[pos.y])) {
+
+            break;
+        }
+
+        if (data[pos.y][pos.x] == '#') {
+            pos.x -= dirs[dir].x;
+            pos.y -= dirs[dir].y;
+            data[pos.y][pos.x] = dir_chars[dir];
+            dir = (dir + 1) % 4;
+            continue;
+        }
+
+        data[pos.y][pos.x] = dir_chars[dir];
+    }
+
+    for (int i = 0; i < arrlen(data); ++i) {
+        for (int j = 0; j < sdslen(data[i]); ++j) {
+            result += data[i][j] == 'X';
+        }
+    }
+
+    for (int i = 0; i < arrlen(data); ++i)
+        sdsfree(data[i]);
+    arrfree(data);
+    fclose(f);
+
+    return result;
+}
+
+static ivec2_t *pairs;
 int aoc_5_a_cmp(const void* a, const void* b)
 {
     int ai = *(int*)a; int bi = *(int*)b;
@@ -51,7 +200,7 @@ int aoc_5_a_cmp(const void* a, const void* b)
 int aoc_5_b()
 {
     i64 result = 0;
-    sds data = sdsfread(sdsempty(), "resources/aoc_5_data.txt");
+    sds data = sdsfread(sdsempty(), "resources/aoc_data/aoc_5_data.txt");
     char *data_ptr = data;
     int **updates = NULL, updates_idx = -1;
     int **updates_sorted = NULL, updates_sorted_idx = -1;
@@ -93,13 +242,22 @@ int aoc_5_b()
         result += updates_sorted[i][arrlen(updates_sorted[i]) / 2];
     }
 
+    for (int i = 0; i < arrlen(updates); ++i)
+        arrfree(updates[i]);
+    for (int i = 0; i < arrlen(updates_sorted); ++i)
+        arrfree(updates_sorted[i]);
+    arrfree(pairs);
+    arrfree(updates_sorted);
+    arrfree(updates);
+    sdsfree(data);
+
     return result;
 }
 
 int aoc_5_a()
 {
     i64 result = 0;
-    sds data = sdsfread(sdsempty(), "resources/aoc_5_data.txt");
+    sds data = sdsfread(sdsempty(), "resources/aoc_data/aoc_5_data.txt");
     char *data_ptr = data;
     int **updates = NULL, updates_idx = -1;
     int **updates_sorted = NULL, updates_sorted_idx = -1;
@@ -140,13 +298,22 @@ int aoc_5_a()
             result += updates[i][arrlen(updates[i]) / 2];
     }
 
+    for (int i = 0; i < arrlen(updates); ++i)
+        arrfree(updates[i]);
+    for (int i = 0; i < arrlen(updates_sorted); ++i)
+        arrfree(updates_sorted[i]);
+    arrfree(pairs);
+    arrfree(updates_sorted);
+    arrfree(updates);
+    sdsfree(data);
+
     return result;
 }
 
 int aoc_4_b()
 {
     i64 result = 0, dm_idx = -1;
-    sds data_str = sdsfread(sdsempty(), "resources/aoc_4_data.txt");
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_4_data.txt");
     sds *dm = NULL;
 
     for (int i = 0; i < sdslen(data_str); ++i) {
@@ -188,7 +355,7 @@ int aoc_4_b()
 int aoc_4_a()
 {
     i64 result = 0, dm_idx = -1;
-    sds data_str = sdsfread(sdsempty(), "resources/aoc_4_data.txt");
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_4_data.txt");
     sds *dm = NULL;
 
     for (int i = 0; i < sdslen(data_str); ++i) {
@@ -242,7 +409,7 @@ int aoc_3_b()
 {
     i64 result = 0;
 
-    sds data_str = sdsfread(sdsempty(), "resources/aoc_3_data.txt");
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_3_data.txt");
 
     int err_code; u64 err_offset;
     PCRE2_SPTR pattern = (PCRE2_SPTR) "mul\\([0-9]+,[0-9]+\\)";
@@ -302,7 +469,7 @@ int aoc_3_a()
 {
     i64 result = 0;
 
-    sds data_str = sdsfread(sdsempty(), "resources/aoc_3_data.txt");
+    sds data_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_3_data.txt");
 
     int err_code; u64 err_offset;
     PCRE2_SPTR pattern = (PCRE2_SPTR) "mul\\([0-9]+,[0-9]+\\)";
@@ -346,7 +513,7 @@ int aoc_3_a()
 
 int aoc_2_a()
 {
-    sds reports_str = sdsfread(sdsempty(), "resources/aoc_2_data.txt");
+    sds reports_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_2_data.txt");
 
     int report_idx = 0;
     i32 **reports = NULL;
@@ -433,7 +600,7 @@ bool aoc_2_b_verf(int* array)
 
 int aoc_2_b()
 {
-    sds reports_str = sdsfread(sdsempty(), "resources/aoc_2_data.txt");
+    sds reports_str = sdsfread(sdsempty(), "resources/aoc_data/aoc_2_data.txt");
 
     int report_idx = 0;
     i32 **reports = NULL;
@@ -492,7 +659,7 @@ int aoc_1_a()
     int res = 0, idx = 0;
     int_array_t *list_l_r[2] = { 0 };
 
-    sds lists = sdsfread(sdsempty(), "resources/aoc_1_data.txt");
+    sds lists = sdsfread(sdsempty(), "resources/aoc_data/aoc_1_data.txt");
 
     for (char *lists_ptr = lists; *lists_ptr != 0; lists_ptr++) {
         char *end_ptr;
@@ -525,7 +692,7 @@ int aoc_1_b()
     int res = 0, idx = 0;
     int_map_t *map_l_r[2] = { 0 };
 
-    sds lists = sdsfread(sdsempty(), "resources/aoc_1_data.txt");
+    sds lists = sdsfread(sdsempty(), "resources/aoc_data/aoc_1_data.txt");
 
     for (char *lists_ptr = lists; *lists_ptr != 0; lists_ptr++) {
         char *end_ptr;
