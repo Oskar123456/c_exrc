@@ -20,13 +20,13 @@ License:            none
 void timeFn(int (*fn)(void), int *dest, u64 *time_dest)
 {
     struct timespec t, at;
-    u64 dt_ns, dt_sec, dt_millis;
+    u64 dt_ns, dt_sec;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
     *dest = fn();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
-    dt_ns  = at.tv_nsec - t.tv_nsec;
-    dt_sec = at.tv_sec - t.tv_sec;
-    *time_dest = dt_ns / 1000 + dt_sec * 1000000; /* micros */
+    u64 t_mcs = t.tv_sec * 1000000 + t.tv_nsec / 1000;
+    u64 at_mcs = at.tv_sec * 1000000 + at.tv_nsec / 1000;
+    *time_dest = at_mcs - t_mcs; /* micros */
 }
 
 int main(int argc, char *argv[])
@@ -87,6 +87,12 @@ int main(int argc, char *argv[])
     timeFn(aoc_6_a, &result_int, &time_mcs);
     printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
     timeFn(aoc_6_b, &result_int, &time_mcs);
+    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+
+    printf(">>> advent of code day 7\n");
+    timeFn(aoc_7_a, &result_int, &time_mcs);
+    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    timeFn(aoc_7_b, &result_int, &time_mcs);
     printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
     //int maxlen = 256;

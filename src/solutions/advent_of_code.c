@@ -11,33 +11,268 @@ License:            none
 #include "../../include/obh/util.h"
 #include "../../include/stb/stb_ds.h"
 
-typedef struct ivec2_t {
-    int x, y;
-} ivec2_t;
+#include <gmp.h>
 
-typedef struct int_array_t {
-    union {
-        int key;
-        int value;
-    };
-} int_array_t;
+#include "aoc_ds.c"
 
-typedef struct int_map_t {
-    int key;
-    int value;
-} int_map_t;
-
-int int_array_cmp(const void* a, const void* b)
+sds bigint_from_string(const char *ptr, const char **end_ptr)
 {
-    return ((int_array_t*)a)->key - ((int_array_t*)b)->key;
+    const char *ptr_ptr = ptr;
+    while (*ptr_ptr && *ptr_ptr != '-' && !isdigit(*ptr_ptr))
+        ptr_ptr++;
+    if (!*ptr_ptr)
+        return NULL;
+    bool is_neg = *ptr_ptr == '-';
+    if (is_neg) ptr_ptr++;
+    if (!isdigit(*ptr_ptr))
+        return NULL;
+
+    int len = 0;
+    while (isdigit(*ptr_ptr)) {
+        len++;
+        ptr_ptr++;
+    }
+    sds bi = sdscatlen(sdsempty(), ptr_ptr - len, len);
+
+    if (end_ptr && *end_ptr)
+        *end_ptr = ptr_ptr;
+
+    return bi;
 }
 
-typedef struct ivec2_map_t {
-    union {
-        ivec2_t key;
-        ivec2_t value;
-    };
-} ivec2_map_t;
+bool aoc_7_b_help(mpz_t result, mpz_t actual, mpz_t *vals, int len, int idx, char *ops)
+{
+    if (idx >= len) {
+        if (mpz_cmp(result, actual) == 0)
+            return true;
+        else return false;
+    }
+
+    bool retval = false;
+
+    mpz_t tmp_add; mpz_init(tmp_add);
+    mpz_t tmp_mul; mpz_init(tmp_mul);
+    mpz_t tmp_cat; mpz_init(tmp_cat);
+
+    mpz_add(tmp_add, actual, vals[idx]);
+    mpz_mul(tmp_mul, actual, vals[idx]);
+
+    char a[400];
+    mpz_get_str(a, 10, actual);
+    mpz_get_str(&a[strlen(a)], 10, vals[idx]);
+    mpz_set_str(tmp_cat, a, 10);
+
+    ops[idx] = '+';
+    if (aoc_7_b_help(result, tmp_add, vals, len, idx + 1, ops))
+        retval = true;
+    if (!retval) {
+        ops[idx] = '*';
+        if (aoc_7_b_help(result, tmp_mul, vals, len, idx + 1, ops))
+            retval = true;
+    }
+    if (!retval) {
+        ops[idx] = '|';
+        if (aoc_7_b_help(result, tmp_cat, vals, len, idx + 1, ops))
+            retval = true;
+    }
+
+    mpz_clear(tmp_add);
+    mpz_clear(tmp_mul);
+    mpz_clear(tmp_cat);
+
+    return retval;
+}
+
+int aoc_7_b()
+{
+    i64 result = 0;
+
+    sds *results = NULL;
+    sds **terms = NULL;
+
+    FILE *f = fopen("resources/aoc_data/aoc_7_data.txt", "r");
+    //FILE *f = fopen("aoc7testdata.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        const char *line_ptr = line;
+        sds bi = bigint_from_string(line_ptr, &line_ptr);
+        arrput(results, bi);
+        arrput(terms, NULL);
+        while (*line_ptr && *line_ptr != '\n') {
+            sds bi = bigint_from_string(line_ptr, &line_ptr);
+            if (bi == NULL)
+                break;
+            arrput(terms[arrlen(terms) - 1], bi);
+        }
+    }
+    fclose(f);
+
+    mpz_t results_mpz[arrlen(results)];
+    mpz_t *terms_mpz[arrlen(results)];
+    mpz_t final;
+    mpz_init(final);
+    mpz_set_ui(final, 0);
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        mpz_init(results_mpz[i]);
+        mpz_set_str(results_mpz[i], results[i], 10);
+        terms_mpz[i] = calloc(arrlen(terms[i]), sizeof(mpz_t));
+        for (int j = 0; j < arrlen(terms[i]); ++j) {
+            mpz_init(terms_mpz[i][j]);
+            mpz_set_str(terms_mpz[i][j], terms[i][j], 10);
+        }
+    }
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        char ops[512];
+        if (aoc_7_b_help(results_mpz[i], terms_mpz[i][0], terms_mpz[i], arrlen(terms[i]), 1, ops)) {
+            mpz_add(final, final, results_mpz[i]);
+            //printf("[SUCCESS] %.*s: ", (int)sdslen(results[i]), results[i]);
+            //for (int j = 0; j < arrlen(terms[i]); ++j) {
+                //printf("%s", terms[i][j]);
+                //if (j < arrlen(terms[i]) - 1)
+                    //printf(" %c ", ops[j + 1]);
+            //}
+            //printf("\n");
+        } else {
+            //printf("[FAIL] %.*s:", (int)sdslen(results[i]), results[i]);
+            //for (int j = 0; j < arrlen(terms[i]); ++j) {
+                //printf(" %s", terms[i][j]);
+            //}
+            //printf("\n");
+        }
+    }
+
+    char str[512];
+    printf("\n[aoc_7_b] FINAL ANSWER: %s\n\n", mpz_get_str(str, 10, final));
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        mpz_clear(results_mpz[i]);
+        for (int j = 0; j < arrlen(terms[i]); ++j) {
+            sdsfree(terms[i][j]);
+            mpz_clear(terms_mpz[i][j]);
+        }
+        sdsfree(results[i]);
+        free(terms_mpz[i]);
+        arrfree(terms[i]);
+    }
+    arrfree(results);
+    arrfree(terms);
+    mpz_clear(final);
+
+    return result;
+}
+
+bool aoc_7_a_help(mpz_t result, mpz_t actual, mpz_t *vals, int len, int idx, char *ops)
+{
+    if (idx >= len) {
+        if (mpz_cmp(result, actual) == 0)
+            return true;
+        else return false;
+    }
+
+    bool retval = false;
+
+    mpz_t tmp_add; mpz_init(tmp_add);
+    mpz_t tmp_mul; mpz_init(tmp_mul);
+
+    mpz_add(tmp_add, actual, vals[idx]);
+    mpz_mul(tmp_mul, actual, vals[idx]);
+
+    ops[idx] = '+';
+    if (aoc_7_a_help(result, tmp_add, vals, len, idx + 1, ops))
+        retval = true;
+    if (!retval) {
+        ops[idx] = '*';
+        if (aoc_7_a_help(result, tmp_mul, vals, len, idx + 1, ops))
+            retval = true;
+    }
+
+    mpz_clear(tmp_add);
+    mpz_clear(tmp_mul);
+
+    return retval;
+}
+
+int aoc_7_a()
+{
+    i64 result = 0;
+
+    sds *results = NULL;
+    sds **terms = NULL;
+
+    FILE *f = fopen("resources/aoc_data/aoc_7_data.txt", "r");
+    //FILE *f = fopen("aoc7testdata.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        const char *line_ptr = line;
+        sds bi = bigint_from_string(line_ptr, &line_ptr);
+        arrput(results, bi);
+        arrput(terms, NULL);
+        while (*line_ptr && *line_ptr != '\n') {
+            sds bi = bigint_from_string(line_ptr, &line_ptr);
+            if (bi == NULL)
+                break;
+            arrput(terms[arrlen(terms) - 1], bi);
+        }
+    }
+    fclose(f);
+
+    mpz_t results_mpz[arrlen(results)];
+    mpz_t *terms_mpz[arrlen(results)];
+    mpz_t final;
+    mpz_init(final);
+    mpz_set_ui(final, 0);
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        mpz_init(results_mpz[i]);
+        mpz_set_str(results_mpz[i], results[i], 10);
+        terms_mpz[i] = calloc(arrlen(terms[i]), sizeof(mpz_t));
+        for (int j = 0; j < arrlen(terms[i]); ++j) {
+            mpz_init(terms_mpz[i][j]);
+            mpz_set_str(terms_mpz[i][j], terms[i][j], 10);
+        }
+    }
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        char ops[512];
+        if (aoc_7_a_help(results_mpz[i], terms_mpz[i][0], terms_mpz[i], arrlen(terms[i]), 1, ops)) {
+            mpz_add(final, final, results_mpz[i]);
+            //printf("[SUCCESS] %.*s: ", (int)sdslen(results[i]), results[i]);
+            //for (int j = 0; j < arrlen(terms[i]); ++j) {
+                //printf("%s", terms[i][j]);
+                //if (j < arrlen(terms[i]) - 1)
+                    //printf(" %c ", ops[j + 1]);
+            //}
+            //printf("\n");
+        } else {
+            //printf("[FAIL] %.*s:", (int)sdslen(results[i]), results[i]);
+            //for (int j = 0; j < arrlen(terms[i]); ++j) {
+                //printf(" %s", terms[i][j]);
+            //}
+            //printf("\n");
+        }
+    }
+
+    char str[512];
+    printf("\n[aoc_7_a] FINAL ANSWER: %s\n\n", mpz_get_str(str, 10, final));
+
+    for (int i = 0; i < arrlen(results); ++i) {
+        mpz_clear(results_mpz[i]);
+        for (int j = 0; j < arrlen(terms[i]); ++j) {
+            sdsfree(terms[i][j]);
+            mpz_clear(terms_mpz[i][j]);
+        }
+        sdsfree(results[i]);
+        free(terms_mpz[i]);
+        arrfree(terms[i]);
+    }
+    arrfree(results);
+    arrfree(terms);
+    mpz_clear(final);
+
+    return result;
+}
 
 int aoc_6_b()
 {
@@ -59,7 +294,7 @@ int aoc_6_b()
             pos.x = gp - l;
             pos.y = arrlen(data);
             dir = strchr(dir_chars, *gp) - dir_chars;
-            printf("%d, %d dir: %d\n", pos.y, pos.x, dir);
+            //printf("%d, %d dir: %d\n", pos.y, pos.x, dir);
         }
         arrput(data, l);
     }
@@ -428,8 +663,6 @@ int aoc_3_b()
         PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
 
         char *match_ptr = &data_str[ovector[0]];
-        char *match_ptr_forp = &data_str[ovector[0]];
-        int match_len = ovector[1] - ovector[0];
 
         bool enable = true;
         for (char *matchptr_b = match_ptr - 1; matchptr_b >= data_str; matchptr_b--) {
@@ -488,8 +721,6 @@ int aoc_3_a()
         PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(match_data);
 
         char *match_ptr = &data_str[ovector[0]];
-        char *match_ptr_forp = &data_str[ovector[0]];
-        int match_len = ovector[1] - ovector[0];
 
         while (!isdigit(*match_ptr))
             match_ptr++;
@@ -623,7 +854,6 @@ int aoc_2_b()
     int res = 0;
     int *test_report = NULL;
     for (int i = 0; i < arrlen(reports); ++i) {
-        int fault_idx;
         bool verf = aoc_2_b_verf(reports[i]);
 
         if (verf) {

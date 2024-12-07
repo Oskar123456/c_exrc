@@ -22,6 +22,7 @@
 #include <string.h>
 #include <time.h>
 #include <wchar.h>
+#include <assert.h>
 /* linux */
 #if defined(__unix__) || defined(__linux__)
 #include <signal.h>
