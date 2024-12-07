@@ -90,25 +90,10 @@ int main(int argc, char *argv[])
     printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
     printf(">>> advent of code day 7\n");
-    //timeFn(aoc_7_a, &result_int, &time_mcs);
-    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    //timeFn(aoc_7_b, &result_int, &time_mcs);
-    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
     timeFn(aoc_7_a_2, &result_int, &time_mcs);
     printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
     timeFn(aoc_7_b_2, &result_int, &time_mcs);
     printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
-
-    //int maxlen = 256;
-    //char line[maxlen];
-    //while ((fgets(line, maxlen, stdin)) != NULL) {
-        //lex(line);
-        //SyntaxTree* ast = parse();
-        //printast(ast, 0);
-        //c_log_success(LOG_TAG, "result: %f", eval(ast));
-        //double res = calcEval(line);
-        //c_log_success(LOG_TAG, "result: %f", res);
-    //}
 
     /* LET THE GAMES END */
 

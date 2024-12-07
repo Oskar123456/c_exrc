@@ -1,5 +1,31 @@
 #include "../include/obh/util.h"
 
+sds bigint_from_string(const char *ptr, const char **end_ptr)
+{
+    const char *ptr_ptr = ptr;
+    while (*ptr_ptr && *ptr_ptr != '-' && !isdigit(*ptr_ptr))
+        ptr_ptr++;
+    if (!*ptr_ptr)
+        return NULL;
+    bool is_neg = *ptr_ptr == '-';
+    if (is_neg) ptr_ptr++;
+    if (!isdigit(*ptr_ptr))
+        return NULL;
+
+    int len = 0;
+    while (isdigit(*ptr_ptr)) {
+        len++;
+        ptr_ptr++;
+    }
+    sds bi = sdscatlen(sdsempty(), ptr_ptr - len, len);
+
+    if (end_ptr && *end_ptr)
+        *end_ptr = ptr_ptr;
+
+    return bi;
+}
+
+
 void arr_i_print(const int *arr, const int len)
 {
     int max = 0;
