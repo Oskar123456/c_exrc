@@ -49,8 +49,8 @@ int aoc_7_b_2()
         while (*line_ptr && *line_ptr != '\n') {
             if (isdigit(*line_ptr)) {
                 i64 ll = strtoll(line_ptr, &line_ptr, 10);
-                assert(ll != LONG_MAX);
-                assert(ll != LONG_MIN);
+                assert(ll != LLONG_MAX);
+                assert(ll != LLONG_MIN);
                 arrput(eqs[arrlen(eqs) - 1], ll);
             }
             else
