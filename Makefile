@@ -22,9 +22,6 @@ CFLAGS      := -fopenmp -Wall -g
 LIB         := -lm -lpq -lcurl -lpcre2-8 -lgmp
 INC         := -I$(INCDIR) -I$(LIBDIR)
 INCDEP      := -I$(INCDIR)
-# Mongoose build options. See https://mongoose.ws/documentation/#build-options
-CFLAGS_MONGOOSE += -DMG_ENABLE_LINES=1
-CFLAGS_EXTRA    ?= -DMG_TLS=MG_TLS_BUILTIN
 
 #---------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE
@@ -72,8 +69,8 @@ $(TARGET): $(OBJECTS)
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CFLAGS_MONGOOSE) $(CFLAGS_EXTRA) $(INC) -c -o $@ $<
-	@$(CC) $(CFLAGS) $(CFLAGS_MONGOOSE) $(CFLAGS_EXTRA) $(INCDEP) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(INCDEP) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
 	@cp -fr $(BUILDDIR)/$*.$(DEPEXT) $(BUILDDIR)/$*.$(DEPEXT).tmp
 	@sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)

@@ -15,6 +15,114 @@ License:            none
 
 #include "aoc_ds.c"
 
+bool aoc_7_b_2_help(u64 answer, u64 current, u64 *terms, int idx)
+{
+    if (idx >= arrlen(terms)) {
+        if (current == answer)
+            return true;
+        return false;
+    }
+
+    bool retval = aoc_7_b_2_help(answer, current + terms[idx], terms, idx + 1);
+    if (!retval)
+        retval = aoc_7_b_2_help(answer, current * terms[idx], terms, idx + 1);
+    if (!retval) {
+        int next_len = (int)log10(terms[idx]) + 1;
+        u64 cat = current * pow(10, next_len) + terms[idx];
+        retval = aoc_7_b_2_help(answer, cat, terms, idx + 1);
+    }
+
+    return retval;
+}
+
+int aoc_7_b_2()
+{
+    u64 result = 0;
+
+    u64 **eqs = NULL;
+
+    FILE *f = fopen("resources/aoc_data/aoc_7_data.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        arrput(eqs, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n') {
+            if (isdigit(*line_ptr)) {
+                i64 ll = strtoll(line_ptr, &line_ptr, 10);
+                assert(ll != LONG_MAX);
+                assert(ll != LONG_MIN);
+                arrput(eqs[arrlen(eqs) - 1], ll);
+            }
+            else
+                line_ptr++;
+        }
+    }
+    fclose(f);
+
+    for (int i = 0; i < arrlen(eqs); ++i) {
+        if (aoc_7_b_2_help(eqs[i][0], eqs[i][1], eqs[i], 2))
+            result += eqs[i][0];
+        arrfree(eqs[i]);
+    }
+    printf("aoc_7_b_2: %lu\n", result);
+
+    arrfree(eqs);
+
+    return result;
+}
+
+bool aoc_7_a_2_help(u64 answer, u64 current, u64 *terms, int idx)
+{
+    if (idx >= arrlen(terms)) {
+        if (current == answer)
+            return true;
+        return false;
+    }
+
+    bool retval = aoc_7_b_2_help(answer, current + terms[idx], terms, idx + 1);
+    if (!retval)
+        retval = aoc_7_b_2_help(answer, current * terms[idx], terms, idx + 1);
+
+    return retval;
+}
+
+int aoc_7_a_2()
+{
+    u64 result = 0;
+
+    u64 **eqs = NULL;
+
+    FILE *f = fopen("resources/aoc_data/aoc_7_data.txt", "r");
+    //FILE *f = fopen("aoc7testdata.txt", "r");
+    char line[4000];
+    while ((fgets(line, 4000, f)) != NULL) {
+        arrput(eqs, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n') {
+            if (isdigit(*line_ptr)) {
+                i64 ll = strtoll(line_ptr, &line_ptr, 10);
+                assert(ll != LONG_MAX);
+                assert(ll != LONG_MIN);
+                arrput(eqs[arrlen(eqs) - 1], ll);
+            }
+            else
+                line_ptr++;
+        }
+    }
+    fclose(f);
+
+    for (int i = 0; i < arrlen(eqs); ++i) {
+        if (aoc_7_a_2_help(eqs[i][0], eqs[i][1], eqs[i], 2))
+            result += eqs[i][0];
+        arrfree(eqs[i]);
+    }
+    printf("aoc_7_b_2: %lu\n", result);
+
+    arrfree(eqs);
+
+    return result;
+}
+
 sds bigint_from_string(const char *ptr, const char **end_ptr)
 {
     const char *ptr_ptr = ptr;
