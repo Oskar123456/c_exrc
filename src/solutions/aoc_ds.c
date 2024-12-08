@@ -26,4 +26,9 @@ typedef struct ivec2_map_t {
     };
 } ivec2_map_t;
 
+typedef struct antenna_map_t {
+    char key;
+    ivec2_map_t *value;
+} antenna_map_t;
+
 

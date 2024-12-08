@@ -15,6 +15,156 @@ License:            none
 
 #include "aoc_ds.c"
 
+#define MAXLEN 512
+
+int aoc_8_b()
+{
+    u64 result = 0;
+    char **map = NULL, line[MAXLEN];
+
+    FILE *f = fopen("resources/aoc_data/aoc_8_data.txt", "r");
+    while ((fgets(line, MAXLEN, f)) != NULL) {
+        arrput(map, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n')
+            arrput(map[arrlen(map) - 1], *line_ptr++);
+    } fclose(f);
+    /* init hmaps */
+    antenna_map_t *antenna_map = NULL;
+    for (int i = 0; i < arrlen(map); ++i) {
+        for (int j = 0; j < arrlen(map[i]); ++j) {
+            if (map[i][j] == '.')
+                continue;
+            ivec2_t p = { j, i };
+            if (hmgeti(antenna_map, map[i][j]) < 0)
+                hmput(antenna_map, map[i][j], NULL);
+            antenna_map_t *am = hmgetp(antenna_map, map[i][j]);
+            hmput(am->value, p, p);
+        }
+    }
+    /* find antinodes */
+    hmput(antenna_map, '#', NULL);
+    antenna_map_t *antinode_map = hmgetp(antenna_map, '#');
+    for (int i = 0; i < hmlen(antenna_map); ++i) {
+        if (antenna_map[i].key == '#') continue;
+        ivec2_map_t *ant_list = antenna_map[i].value;
+        for (int j = 0; j < hmlen(ant_list); ++j) {
+            for (int k = j + 1; k < hmlen(ant_list); ++k) {
+                ivec2_t p1 = ant_list[j].key;
+                ivec2_t p2 = ant_list[k].key;
+
+                ivec2_t step = { p1.x - p2.x, p1.y - p2.y };
+                ivec2_t pos;
+
+                pos = p1;
+                while (pos.x >= 0 && pos.x < arrlen(map[0])
+                        && pos.y >= 0 && pos.y < arrlen(map)) {
+                    hmput(antinode_map->value, pos, pos);
+                    pos.x += step.x;
+                    pos.y += step.y;
+                }
+
+                pos = p2;
+                while (pos.x >= 0 && pos.x < arrlen(map[0])
+                        && pos.y >= 0 && pos.y < arrlen(map)) {
+                    hmput(antinode_map->value, pos, pos);
+                    pos.x -= step.x;
+                    pos.y -= step.y;
+                }
+            }
+        }
+    }
+
+    result = hmlen(antinode_map->value);
+    printf("aoc_8_a: %lu\n", result);
+    return result;
+}
+
+int aoc_8_a()
+{
+    u64 result = 0;
+    char **map = NULL, line[MAXLEN];
+
+    //FILE *f = fopen("aoc8datatest.txt", "r");
+    FILE *f = fopen("resources/aoc_data/aoc_8_data.txt", "r");
+    while ((fgets(line, MAXLEN, f)) != NULL) {
+        arrput(map, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n')
+            arrput(map[arrlen(map) - 1], *line_ptr++);
+    } fclose(f);
+    /* init hmaps */
+    antenna_map_t *antenna_map = NULL;
+    for (int i = 0; i < arrlen(map); ++i) {
+        for (int j = 0; j < arrlen(map[i]); ++j) {
+            if (map[i][j] == '.')
+                continue;
+            ivec2_t p = { j, i };
+            if (hmgeti(antenna_map, map[i][j]) < 0)
+                hmput(antenna_map, map[i][j], NULL);
+            antenna_map_t *am = hmgetp(antenna_map, map[i][j]);
+            hmput(am->value, p, p);
+        }
+    }
+    /* find antinodes */
+    hmput(antenna_map, '#', NULL);
+    antenna_map_t *antinode_map = hmgetp(antenna_map, '#');
+    for (int i = 0; i < hmlen(antenna_map); ++i) {
+        if (antenna_map[i].key == '#') continue;
+        ivec2_map_t *ant_list = antenna_map[i].value;
+        for (int j = 0; j < hmlen(ant_list); ++j) {
+            for (int k = j + 1; k < hmlen(ant_list); ++k) {
+                ivec2_t p1 = ant_list[j].key;
+                ivec2_t p2 = ant_list[k].key;
+
+                int dx = abs(p1.x - p2.x);
+                int dy = abs(p1.y - p2.y);
+                int sign_x = p1.x < p2.x ? -1 : 1;
+                int sign_y = p1.y < p2.y ? -1 : 1;
+
+                ivec2_t a1 = { p1.x + dx * sign_x, p1.y + dy * sign_y};
+                ivec2_t a2 = { p2.x + dx * -sign_x, p2.y + dy * -sign_y};
+
+                printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
+                       antenna_map[i].key, a1.x, a1.y, p1.x, p1.y, p2.x, p2.y);
+                printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
+                       antenna_map[i].key, a2.x, a2.y, p2.x, p2.y, p1.x, p1.y);
+
+                hmput(antinode_map->value, a1, a1);
+                hmput(antinode_map->value, a2, a2);
+            }
+        }
+    }
+    /* print hmaps */
+    for (int i = 0; i < hmlen(antenna_map); ++i) {
+        printf("%c: [", antenna_map[i].key);
+        for (int j = 0; j < hmlen(antenna_map[i].value); ++j) {
+            printf("(%d,%d)", antenna_map[i].value[j].value.x, antenna_map[i].value[j].value.y);
+        }
+        printf("]\n");
+    }
+    /* print map */
+    for (int i = 0; i < arrlen(map); ++i) {
+        for (int j = 0; j < arrlen(map[i]); ++j) {
+            ivec2_t p = { j, i };
+            if (hmgeti(antinode_map->value, p) >= 0) {
+                result++;
+                if (map[i][j] == '.')
+                    printf("%c", antinode_map->key);
+                else
+                    printf("%c", map[i][j]);
+            }
+            else
+                printf("%c", map[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("aoc_8_a: %lu\n", result);
+
+    return result;
+}
+
 bool aoc_7_b_2_help(u64 answer, u64 current, u64 *terms, int idx)
 {
     if (idx >= arrlen(terms) || current > answer) {

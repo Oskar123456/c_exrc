@@ -52,48 +52,54 @@ int main(int argc, char *argv[])
     int result_int; u64 time_mcs;
 
     printf("***ADVENT OF CODE 2024***\n");
-    printf(">>> advent of code day 1\n");
+    //printf(">>> advent of code day 1\n");
 
-    timeFn(aoc_1_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_1_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_1_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_1_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
-    printf(">>> advent of code day 2\n");
-    timeFn(aoc_2_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_2_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //printf(">>> advent of code day 2\n");
+    //timeFn(aoc_2_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_2_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
-    printf(">>> advent of code day 3\n");
-    timeFn(aoc_3_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_3_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //printf(">>> advent of code day 3\n");
+    //timeFn(aoc_3_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_3_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
-    printf(">>> advent of code day 4\n");
-    timeFn(aoc_4_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_4_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //printf(">>> advent of code day 4\n");
+    //timeFn(aoc_4_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_4_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
-    printf(">>> advent of code day 5\n");
-    timeFn(aoc_5_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_5_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //printf(">>> advent of code day 5\n");
+    //timeFn(aoc_5_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_5_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
 
-    printf(">>> advent of code day 6\n");
-    timeFn(aoc_6_a, &result_int, &time_mcs);
-    printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
-    timeFn(aoc_6_b, &result_int, &time_mcs);
-    printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //printf(">>> advent of code day 6\n");
+    //timeFn(aoc_6_a, &result_int, &time_mcs);
+    //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+    //timeFn(aoc_6_b, &result_int, &time_mcs);
+    //printf("\t(b) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
+
+    //printf(">>> advent of code day 7\n");
+    //timeFn(aoc_7_a_2, &result_int, &time_mcs);
+    //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    //timeFn(aoc_7_b_2, &result_int, &time_mcs);
+    //printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
 
     printf(">>> advent of code day 7\n");
-    timeFn(aoc_7_a_2, &result_int, &time_mcs);
+    //timeFn(aoc_8_a, &result_int, &time_mcs);
+    //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    timeFn(aoc_8_b, &result_int, &time_mcs);
     printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
-    timeFn(aoc_7_b_2, &result_int, &time_mcs);
-    printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
 
     /* LET THE GAMES END */
 
