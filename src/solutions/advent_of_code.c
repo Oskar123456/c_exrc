@@ -17,6 +17,140 @@ License:            none
 
 #define MAXLEN 512
 
+typedef struct MemBlock {
+    i32 id, space;
+} MemBlock;
+
+void aoc_9_print_mb(MemBlock *mbs)
+{
+    for (int i = 0; i < arrlen(mbs); ++i) {
+        if (mbs[i].id < 0) {
+            for (int j = 0; j < mbs[i].space; ++j) {
+                printf("[.]");
+            }
+        }
+        else {
+            for (int j = 0; j < mbs[i].space; ++j) {
+                printf("[%d]", mbs[i].id);
+            }
+        }
+    }
+    printf("\n");
+}
+
+void aoc_9_print(i32 *data_exp)
+{
+    for (int i = 0; i < arrlen(data_exp); ++i) {
+        if (data_exp[i] < 0)
+            printf(".");
+        else
+            printf("%d", data_exp[i]);
+    }
+    printf("\n");
+}
+
+int aoc_9_b()
+{
+    u64 result = 0;
+    sds data = sdsfread(sdsempty(), "resources/aoc_data/aoc_9_data.txt");
+    //sds data = sdsfread(sdsempty(), "aoc9datatest.txt");
+    MemBlock *mem_blocks = NULL;
+
+    int_map_t *id_seen = NULL;
+
+    for (int i = 0; i < sdslen(data); ++i) {
+        i32 id = (i % 2) ? -1 : i / 2;
+        MemBlock mb = { .id = id, .space = data[i] - '0' };
+        arrput(mem_blocks, mb);
+    }
+
+    int last_empty = 0;
+    for (int i = arrlen(mem_blocks) - 1; i >= 0; --i) {
+        if (mem_blocks[i].id < 0 || hmgeti(id_seen, mem_blocks[i].id) >= 0)
+            continue;
+        //printf("skipping %d\n", mem_blocks[i].id);
+        //aoc_9_print_mb(mem_blocks);
+        for (int j = 0; j < i; ++j) {
+            if (mem_blocks[j].id >= 0)
+                continue;
+            i32 mem_left = mem_blocks[j].space - mem_blocks[i].space;
+            if (mem_left < 0)
+                continue;
+
+            hmput(id_seen, mem_blocks[i].id, mem_blocks[i].id);
+
+            mem_blocks[j].id = mem_blocks[i].id;
+            mem_blocks[j].space = mem_blocks[i].space;
+            mem_blocks[i].id = -1;
+
+            if (mem_left > 0) {
+                MemBlock mb = { .id = -1, .space = mem_left };
+                arrins(mem_blocks, j + 1, mb);
+            }
+
+            break;
+        }
+    }
+
+    aoc_9_print_mb(mem_blocks);
+
+    int off = 0;
+    for (int i = 0; i < arrlen(mem_blocks); off += mem_blocks[i].space, ++i) {
+        if (mem_blocks[i].id < 0)
+            continue;
+        for (int j = 0; j < mem_blocks[i].space; ++j) {
+            result += mem_blocks[i].id * (j + off);
+        }
+    }
+
+    sdsfree(data);
+    arrfree(mem_blocks);
+    printf("aoc_8_b: %lu\n", result);
+    return result;
+}
+
+int aoc_9_a()
+{
+    u64 result = 0;
+    sds data = sdsfread(sdsempty(), "resources/aoc_data/aoc_9_data.txt");
+    i32 *data_exp = NULL;
+
+    for (int i = 0; i < sdslen(data); ++i) {
+        int len = data[i] - '0';
+        int c = (i % 2) ? -1 : i / 2;
+        for (int j = 0; j < len; ++j)
+            arrput(data_exp, c);
+    }
+
+    int last_empty = 0;
+    for (int i = arrlen(data_exp) - 1; i >= 0; --i) {
+        //aoc_9_print(data_exp);
+        if (data_exp[i] < 0)
+            continue;
+        for (int j = last_empty; j < i; ++j) {
+            if (data_exp[j] < 0) {
+                data_exp[j] = data_exp[i];
+                data_exp[i] = -1;
+                last_empty = j;
+                break;
+            }
+        }
+    }
+
+    //aoc_9_print(data_exp);
+
+    for (int i = 0; i < arrlen(data_exp); ++i) {
+        if (data_exp[i] < 0)
+            continue;
+        result += data_exp[i] * i;
+    }
+
+    sdsfree(data);
+    arrfree(data_exp);
+    printf("aoc_8_a: %lu\n", result);
+    return result;
+}
+
 int aoc_8_b()
 {
     u64 result = 0;

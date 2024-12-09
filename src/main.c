@@ -95,11 +95,19 @@ int main(int argc, char *argv[])
     //timeFn(aoc_7_b_2, &result_int, &time_mcs);
     //printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
 
-    printf(">>> advent of code day 7\n");
+    //printf(">>> advent of code day 8\n");
     //timeFn(aoc_8_a, &result_int, &time_mcs);
     //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
-    timeFn(aoc_8_b, &result_int, &time_mcs);
+    //timeFn(aoc_8_b, &result_int, &time_mcs);
+    //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    //timeFn(aoc_8_c, &result_int, &time_mcs);
+    //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+
+    printf(">>> advent of code day 9\n");
+    timeFn(aoc_9_a, &result_int, &time_mcs);
     printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    timeFn(aoc_9_b, &result_int, &time_mcs);
+    printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
 
     /* LET THE GAMES END */
 
