@@ -20,7 +20,6 @@ License:            none
 void timeFn(int (*fn)(void), int *dest, u64 *time_dest)
 {
     struct timespec t, at;
-    u64 dt_ns, dt_sec;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
     *dest = fn();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &at);
@@ -52,8 +51,8 @@ int main(int argc, char *argv[])
     int result_int; u64 time_mcs;
 
     printf("***ADVENT OF CODE 2024***\n");
-    //printf(">>> advent of code day 1\n");
 
+    //printf(">>> advent of code day 1\n");
     //timeFn(aoc_1_a, &result_int, &time_mcs);
     //printf("\t(a) solution: %d (in %lumcs) (\u2713)\n", result_int, time_mcs);
     //timeFn(aoc_1_b, &result_int, &time_mcs);
@@ -100,15 +99,23 @@ int main(int argc, char *argv[])
     //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
     //timeFn(aoc_8_b, &result_int, &time_mcs);
     //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
-    //timeFn(aoc_8_c, &result_int, &time_mcs);
+
+    //printf(">>> advent of code day 9\n");
+    //timeFn(aoc_9_a, &result_int, &time_mcs);
     //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    //timeFn(aoc_9_b, &result_int, &time_mcs);
+    //printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
 
-    printf(">>> advent of code day 9\n");
-    timeFn(aoc_9_a, &result_int, &time_mcs);
+    //printf(">>> advent of code day 10\n");
+    //timeFn(aoc_10_a, &result_int, &time_mcs);
+    //printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
+    //timeFn(aoc_10_b, &result_int, &time_mcs);
+    //printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
+
+
+    printf(">>> advent of code day 11\n");
+    timeFn(aoc_11_a, &result_int, &time_mcs);
     printf("\t(a) in %lumcs (\u2713)\n", time_mcs);
-    timeFn(aoc_9_b, &result_int, &time_mcs);
-    printf("\t(b) in %lumcs (\u2713)\n", time_mcs);
-
     /* LET THE GAMES END */
 
     printf("%s\n", close);

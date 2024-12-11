@@ -17,43 +17,289 @@ License:            none
 
 #define MAXLEN 512
 
-typedef struct MemBlock {
-    i32 id, space;
-} MemBlock;
-
-void aoc_9_print_mb(MemBlock *mbs)
+int strnumlen(const char *str)
 {
-    for (int i = 0; i < arrlen(mbs); ++i) {
-        if (mbs[i].id < 0) {
-            for (int j = 0; j < mbs[i].space; ++j) {
-                printf("[.]");
-            }
-        }
-        else {
-            for (int j = 0; j < mbs[i].space; ++j) {
-                printf("[%d]", mbs[i].id);
-            }
-        }
-    }
-    printf("\n");
+    const char *str_ptr = str;
+    while (*str_ptr && isdigit(*str_ptr)) str_ptr++;
+    return str_ptr - str;
 }
 
-void aoc_9_print(i32 *data_exp)
+typedef struct str_int_map_t {
+    sds key;
+    u64 value;
+} str_int_map_t;
+
+static str_int_map_t *aoc_11_cache;
+
+void aoc11cacheput(sds key, u64 value)
 {
-    for (int i = 0; i < arrlen(data_exp); ++i) {
-        if (data_exp[i] < 0)
-            printf(".");
-        else
-            printf("%d", data_exp[i]);
+    str_int_map_t kv = { .key = key, .value = value };
+    arrput(aoc_11_cache, kv);
+}
+
+i64 aoc11cachefind(sds key)
+{
+    for (int i = 0; i < arrlen(aoc_11_cache); ++i) {
+        if (strcmp(key, aoc_11_cache[i].key) == 0) {
+            printf("found %s: val: %lu\n", key, aoc_11_cache[i].value);
+            return aoc_11_cache[i].value;
+        }
     }
-    printf("\n");
+    return -1;
+}
+
+u64 aoc_11_b_rec(sds stone, int blink)
+{
+    sds stone_w_blink = sdscat(sdsempty(), stone);
+    stone_w_blink = sdscatprintf(stone_w_blink, " blink: %d", blink);
+
+    u64 res;
+
+    if (blink == 0) {
+        //printf("base case: \"%s\"\n", stone);
+        shput(aoc_11_cache, stone_w_blink, 1);
+        //aoc11cacheput(stone_w_blink, 1);
+    } else if (shgeti(aoc_11_cache, stone_w_blink) < 0) {
+        if (strncmp(stone, "0", 1) == 0) {
+            sds next = sdscatprintf(sdsempty(), "%d", 1);
+            res = aoc_11_b_rec(next, blink - 1);
+            //printf("%s is zero\n", stone);
+            sdsfree(next);
+        }
+        else if (sdslen(stone) % 2) {
+            mpz_t c; mpz_init(c);
+            char buf[512];
+            mpz_set_str(c, stone, 10);
+            mpz_mul_ui(c, c, 2024);
+            mpz_get_str(buf, 10, c);
+            mpz_clear(c);
+            sds next = sdscat(sdsempty(), buf);
+            //printf("%s * 2024 = %s\n", stone, next);
+            res = aoc_11_b_rec(next, blink - 1);
+            sdsfree(next);
+        } else {
+            int len = sdslen(stone) / 2, leading_zeroes = 0;
+            sds l = sdscatlen(sdsempty(), stone, len);
+            while (stone[len + leading_zeroes]
+                    && stone[len + leading_zeroes] != '\n'
+                    && stone[len + leading_zeroes] == '0')
+                leading_zeroes++;
+            leading_zeroes = min(leading_zeroes, len - 1);
+            sds r = sdscatlen(sdsempty(), &stone[len + leading_zeroes], len - leading_zeroes);
+            //printf("split %s: %s & %s\n", stone, l, r);
+            res = aoc_11_b_rec(l, blink - 1)
+                + aoc_11_b_rec(r, blink - 1);
+            sdsfree(l);
+            sdsfree(r);
+        }
+        //aoc11cacheput(stone_w_blink, res);
+        shput(aoc_11_cache, stone_w_blink, res);
+    }
+
+    //printf("%s: %lu\n", stone, res);
+    res = shget(aoc_11_cache, stone_w_blink);
+    //res = aoc11cachefind(stone_w_blink);
+    sdsfree(stone_w_blink);
+    return res;
+}
+
+int aoc_11_a()
+{
+    u64 result = 0, blinks = 75;
+
+    sds stones;
+    sds *nums = NULL;
+
+    char line[MAXLEN];
+    FILE *f = fopen("resources/aoc_data/aoc_11_data.txt", "r");
+    //FILE *f = fopen("aoc11datatest.txt", "r");
+    while ((fgets(line, MAXLEN, f)) != NULL) {
+        for (char *line_ptr = line; *line_ptr; ++line_ptr) {
+            if (!isdigit(*line_ptr)) continue;
+            int numlen = strnumlen(line_ptr);
+            sds strnum = sdscatlen(sdsempty(), line_ptr, numlen);
+            arrput(nums, strnum);
+            line_ptr += numlen - 1;
+        }
+    } fclose(f);
+
+    mpz_t res_mpz;
+    mpz_init(res_mpz);
+    mpz_set_ui(res_mpz, 0);
+    for (int i = 0; i < arrlen(nums); ++i) {
+        u64 res = aoc_11_b_rec(nums[i], blinks);
+        mpz_add_ui(res_mpz, res_mpz, res);
+        result += res;
+        printf("%s: %lu\n", nums[i], res);
+    }
+    mpz_get_str(line, 10, res_mpz);
+    printf("%s\n", line);
+
+    printf("aoc_11_a: %lu\n", result);
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int aoc_10_b_walk(int **map, ivec2_t pos)
+{
+    int result = 0;
+    ivec2_t *stack = NULL;
+    arrput(stack, pos);
+    while (arrlen(stack)) {
+        ivec2_t p = arrpop(stack);
+
+        if (map[p.y][p.x] == 9) {
+            result++;
+            continue;
+        }
+
+        ivec2_t *nbs = neighbors(arrlen(map[0]), arrlen(map), p);
+        for (int i = 0; i < arrlen(nbs); ++i) {
+            int diff = map[p.y][p.x] - map[nbs[i].y][nbs[i].x];
+            if (diff != -1)
+                continue;
+            arrput(stack, nbs[i]);
+        }
+        arrfree(nbs);
+    }
+    arrfree(stack);
+    return result;
+}
+
+int aoc_10_b()
+{
+    u64 result = 0;
+    int **map = NULL;
+    char line[MAXLEN];
+    FILE *f = fopen("resources/aoc_data/aoc_10_data.txt", "r");
+    while ((fgets(line, MAXLEN, f)) != NULL) {
+        arrput(map, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n')
+            arrput(map[arrlen(map) - 1], *line_ptr++ - '0');
+    } fclose(f);
+
+    for (int i = 0; i < arrlen(map); ++i) {
+        for (int j = 0; j < arrlen(map[i]); ++j) {
+            if (map[i][j] != 0)
+                continue;
+            ivec2_t pos = { j, i };
+            int r = aoc_10_b_walk(map, pos);
+            result += r;
+            //printf("%d %d has score %d\n", j, i, r);
+        }
+    }
+
+
+
+    printf("aoc_10_b: %lu\n", result);
+    return result;
+}
+
+int aoc_10_a_walk(int **map, ivec2_t pos)
+{
+    int result = 0;
+    ivec2_t *stack = NULL;
+    ivec2_map_t *hmap = NULL;
+    arrput(stack, pos);
+    hmput(hmap, pos, pos);
+    while (arrlen(stack)) {
+        ivec2_t p = arrpop(stack);
+
+        if (map[p.y][p.x] == 9) {
+            result++;
+            continue;
+        }
+
+        ivec2_t *nbs = neighbors(arrlen(map[0]), arrlen(map), p);
+        for (int i = 0; i < arrlen(nbs); ++i) {
+            if (hmgeti(hmap, nbs[i]) >= 0)
+                continue;
+            int diff = map[p.y][p.x] - map[nbs[i].y][nbs[i].x];
+            if (diff != -1)
+                continue;
+            arrput(stack, nbs[i]);
+            hmput(hmap, nbs[i], nbs[i]);
+        }
+        arrfree(nbs);
+    }
+    arrfree(stack);
+    return result;
+}
+
+int aoc_10_a()
+{
+    u64 result = 0;
+    int **map = NULL;
+    char line[MAXLEN];
+    FILE *f = fopen("resources/aoc_data/aoc_10_data.txt", "r");
+    while ((fgets(line, MAXLEN, f)) != NULL) {
+        arrput(map, NULL);
+        char *line_ptr = line;
+        while (*line_ptr && *line_ptr != '\n')
+            arrput(map[arrlen(map) - 1], *line_ptr++ - '0');
+    } fclose(f);
+
+    for (int i = 0; i < arrlen(map); ++i) {
+        for (int j = 0; j < arrlen(map[i]); ++j) {
+            if (map[i][j] != 0)
+                continue;
+            ivec2_t pos = { j, i };
+            int r = aoc_10_a_walk(map, pos);
+            result += r;
+        }
+    }
+
+
+
+    printf("aoc_10_b: %lu\n", result);
+    return result;
 }
 
 int aoc_9_b()
 {
     u64 result = 0;
     sds data = sdsfread(sdsempty(), "resources/aoc_data/aoc_9_data.txt");
-    //sds data = sdsfread(sdsempty(), "aoc9datatest.txt");
     MemBlock *mem_blocks = NULL;
 
     int_map_t *id_seen = NULL;
@@ -64,12 +310,9 @@ int aoc_9_b()
         arrput(mem_blocks, mb);
     }
 
-    int last_empty = 0;
     for (int i = arrlen(mem_blocks) - 1; i >= 0; --i) {
         if (mem_blocks[i].id < 0 || hmgeti(id_seen, mem_blocks[i].id) >= 0)
             continue;
-        //printf("skipping %d\n", mem_blocks[i].id);
-        //aoc_9_print_mb(mem_blocks);
         for (int j = 0; j < i; ++j) {
             if (mem_blocks[j].id >= 0)
                 continue;
@@ -92,8 +335,6 @@ int aoc_9_b()
         }
     }
 
-    aoc_9_print_mb(mem_blocks);
-
     int off = 0;
     for (int i = 0; i < arrlen(mem_blocks); off += mem_blocks[i].space, ++i) {
         if (mem_blocks[i].id < 0)
@@ -105,7 +346,7 @@ int aoc_9_b()
 
     sdsfree(data);
     arrfree(mem_blocks);
-    printf("aoc_8_b: %lu\n", result);
+    printf("aoc_9_b: %lu\n", result);
     return result;
 }
 
@@ -124,7 +365,6 @@ int aoc_9_a()
 
     int last_empty = 0;
     for (int i = arrlen(data_exp) - 1; i >= 0; --i) {
-        //aoc_9_print(data_exp);
         if (data_exp[i] < 0)
             continue;
         for (int j = last_empty; j < i; ++j) {
@@ -137,8 +377,6 @@ int aoc_9_a()
         }
     }
 
-    //aoc_9_print(data_exp);
-
     for (int i = 0; i < arrlen(data_exp); ++i) {
         if (data_exp[i] < 0)
             continue;
@@ -147,7 +385,7 @@ int aoc_9_a()
 
     sdsfree(data);
     arrfree(data_exp);
-    printf("aoc_8_a: %lu\n", result);
+    printf("aoc_9_a: %lu\n", result);
     return result;
 }
 
@@ -259,10 +497,10 @@ int aoc_8_a()
                 ivec2_t a1 = { p1.x + dx * sign_x, p1.y + dy * sign_y};
                 ivec2_t a2 = { p2.x + dx * -sign_x, p2.y + dy * -sign_y};
 
-                printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
-                       antenna_map[i].key, a1.x, a1.y, p1.x, p1.y, p2.x, p2.y);
-                printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
-                       antenna_map[i].key, a2.x, a2.y, p2.x, p2.y, p1.x, p1.y);
+                //printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
+                       //antenna_map[i].key, a1.x, a1.y, p1.x, p1.y, p2.x, p2.y);
+                //printf("adding antinode (%c) at %d %d (near: %d %d far: %d %d)\n",
+                       //antenna_map[i].key, a2.x, a2.y, p2.x, p2.y, p1.x, p1.y);
 
                 hmput(antinode_map->value, a1, a1);
                 hmput(antinode_map->value, a2, a2);
@@ -270,29 +508,29 @@ int aoc_8_a()
         }
     }
     /* print hmaps */
-    for (int i = 0; i < hmlen(antenna_map); ++i) {
-        printf("%c: [", antenna_map[i].key);
-        for (int j = 0; j < hmlen(antenna_map[i].value); ++j) {
-            printf("(%d,%d)", antenna_map[i].value[j].value.x, antenna_map[i].value[j].value.y);
-        }
-        printf("]\n");
-    }
+    //for (int i = 0; i < hmlen(antenna_map); ++i) {
+        //printf("%c: [", antenna_map[i].key);
+        //for (int j = 0; j < hmlen(antenna_map[i].value); ++j) {
+            //printf("(%d,%d)", antenna_map[i].value[j].value.x, antenna_map[i].value[j].value.y);
+        //}
+        //printf("]\n");
+    //}
     /* print map */
-    for (int i = 0; i < arrlen(map); ++i) {
-        for (int j = 0; j < arrlen(map[i]); ++j) {
-            ivec2_t p = { j, i };
-            if (hmgeti(antinode_map->value, p) >= 0) {
-                result++;
-                if (map[i][j] == '.')
-                    printf("%c", antinode_map->key);
-                else
-                    printf("%c", map[i][j]);
-            }
-            else
-                printf("%c", map[i][j]);
-        }
-        printf("\n");
-    }
+    //for (int i = 0; i < arrlen(map); ++i) {
+        //for (int j = 0; j < arrlen(map[i]); ++j) {
+            //ivec2_t p = { j, i };
+            //if (hmgeti(antinode_map->value, p) >= 0) {
+                //result++;
+                //if (map[i][j] == '.')
+                    //printf("%c", antinode_map->key);
+                //else
+                    //printf("%c", map[i][j]);
+            //}
+            //else
+                //printf("%c", map[i][j]);
+        //}
+        //printf("\n");
+    //}
 
     printf("aoc_8_a: %lu\n", result);
 

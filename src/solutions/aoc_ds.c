@@ -31,4 +31,55 @@ typedef struct antenna_map_t {
     ivec2_map_t *value;
 } antenna_map_t;
 
+typedef struct MemBlock {
+    i32 id, space;
+} MemBlock;
 
+void aoc_9_print_mb(MemBlock *mbs)
+{
+    for (int i = 0; i < arrlen(mbs); ++i) {
+        if (mbs[i].id < 0) {
+            for (int j = 0; j < mbs[i].space; ++j) {
+                printf("[.]");
+            }
+        }
+        else {
+            for (int j = 0; j < mbs[i].space; ++j) {
+                printf("[%d]", mbs[i].id);
+            }
+        }
+    }
+    printf("\n");
+}
+
+void aoc_9_print(i32 *data_exp)
+{
+    for (int i = 0; i < arrlen(data_exp); ++i) {
+        if (data_exp[i] < 0)
+            printf(".");
+        else
+            printf("%d", data_exp[i]);
+    }
+    printf("\n");
+}
+/**
+ * returns heap allocated array of in-bounds neighbor positions to pos.
+ */
+ivec2_t *neighbors(int w, int h, ivec2_t pos)
+{
+    ivec2_t *nbs = NULL;
+    for (int i = -1; i < 2; ++i) {
+        for (int j = -1; j < 2; ++j) {
+            int x = pos.x + j;
+            int y = pos.y + i;
+            if (x == pos.x && y == pos.y)
+                continue;
+            if ((x != pos.x && y != pos.y))
+                continue;
+            ivec2_t p = { x, y };
+            if (x >= 0 && x < w && y >= 0 && y < h)
+                arrput(nbs, p);
+        }
+    }
+    return nbs;
+}
